@@ -21,6 +21,7 @@ let state = {
   airportsVisited: [],
   bestScores: JSON.parse(localStorage.getItem('aero-typing-best') || '{}'),
   soundEnabled: true,
+  isInfinite: false,
 };
 
 // ── ELEMENTS ──
@@ -29,13 +30,23 @@ const screens = {
   menu: $('menu-screen'),
   game: $('game-screen'),
   result: $('result-screen'),
-  boarding: $('boarding-screen')
+  boarding: $('boarding-screen'),
+  custom: $('custom-screen')
 };
 
 // ── INIT ──
 function init() {
+  // Landing animation
+  const intro = $('airport-intro');
+  if (intro) {
+    setTimeout(() => intro.classList.add('hidden'), 2200);
+    setTimeout(() => intro.remove(), 2800);
+  }
+
   buildMenu();
   setupModeTabs();
+  setupSwipe();
+  setupCustomRoute();
   $('btn-back').addEventListener('click', goToMenu);
   $('btn-retry').addEventListener('click', retry);
   $('btn-menu').addEventListener('click', goToMenu);
@@ -52,6 +63,17 @@ function init() {
   if (badge && typeof TimeTheme !== 'undefined') {
     const t = TimeTheme.themes[TimeTheme.getPhase()];
     badge.textContent = `${t.icon} ${t.label} Flight`;
+  }
+
+  // Populate datalist for custom route
+  const dl = $('airport-code-list');
+  if (dl) {
+    Object.keys(AIRPORTS).forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.label = AIRPORTS[code].city;
+      dl.appendChild(opt);
+    });
   }
 }
 
@@ -86,6 +108,36 @@ function buildMenu() {
     </div>
   `;
   jGrid.appendChild(randCard);
+
+  // Custom Journey card
+  const customCard = document.createElement('div');
+  customCard.className = 'category-card custom-card-menu';
+  customCard.addEventListener('click', () => showScreen('custom'));
+  customCard.innerHTML = `
+    <div class="card-icon">🛠️</div>
+    <div class="card-title">Custom Route</div>
+    <div class="card-desc">Build your own route</div>
+    <div class="card-meta">
+      <span class="difficulty easy">YOUR PICK</span>
+      <span class="card-count">2–12 airports</span>
+    </div>
+  `;
+  jGrid.appendChild(customCard);
+
+  // Infinite Mode card
+  const infCard = document.createElement('div');
+  infCard.className = 'category-card';
+  infCard.addEventListener('click', () => startInfinite());
+  infCard.innerHTML = `
+    <div class="card-icon">∞</div>
+    <div class="card-title">Infinite Flight</div>
+    <div class="card-desc">Non-stop airports, no timer</div>
+    <div class="card-meta">
+      <span class="difficulty hard">ENDURANCE</span>
+      <span class="card-count">endless</span>
+    </div>
+  `;
+  jGrid.appendChild(infCard);
 
   for (const j of JOURNEYS) {
     const card = document.createElement('div');
@@ -134,6 +186,7 @@ function showScreen(name) {
 
 function goToMenu() {
   clearInterval(state.timerInterval);
+  state.isInfinite = false;
   if (typeof WorldMap !== 'undefined') WorldMap.clear();
   SoundEngine.stopBgm();
   buildMenu();
@@ -168,22 +221,41 @@ function showBoarding(journeyId) {
 
   showScreen('boarding');
 
-  // Animate steps
+  // Dice animation for random journeys
+  const diceWrap = $('bp-dice-wrap');
+  const dice = $('bp-dice');
+  if (journeyId.startsWith('random-') || journeyId.startsWith('infinite-')) {
+    diceWrap.style.display = '';
+    const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+    dice.classList.add('rolling');
+    SoundEngine.diceRoll();
+    let rolls = 0;
+    const rollInterval = setInterval(() => {
+      dice.textContent = faces[Math.floor(Math.random() * 6)];
+      rolls++;
+      if (rolls > 10) { clearInterval(rollInterval); dice.classList.remove('rolling'); dice.textContent = '🎲'; }
+    }, 80);
+  } else {
+    diceWrap.style.display = 'none';
+  }
+
+  // Status animation
+  const status = $('bp-status');
+  status.textContent = 'CHECKED IN';
+  status.className = 'bp-status';
+
   setTimeout(() => {
-    const status = $('bp-status');
     status.textContent = 'BOARDING...';
     status.className = 'bp-status boarding';
   }, 800);
 
   setTimeout(() => {
-    const status = $('bp-status');
-    status.textContent = 'READY FOR TAKEOFF';
+    status.textContent = 'SWIPE TO BOARD →';
     status.className = 'bp-status ready';
   }, 1800);
 
-  setTimeout(() => {
-    startJourney(journeyId);
-  }, 2500);
+  // Store journey ID for swipe handler
+  _boardingJourneyId = journeyId;
 }
 
 // ── RANDOM JOURNEY ──
@@ -222,6 +294,7 @@ function startJourney(journeyId) {
   state.mode = 'journey';
   state.journey = journey;
   state.journeyIndex = 0;
+  state.isInfinite = journeyId.startsWith('infinite-');
   state.category = 'j-' + journeyId;
   state.typed = '';
   state.score = 0;
@@ -517,6 +590,10 @@ function onKeyDown(e) {
   if (e.key === 'Tab') {
     e.preventDefault();
   }
+
+  if (e.key === 'Escape' && state.isInfinite) {
+    endGame();
+  }
 }
 
 function wordComplete(correct) {
@@ -563,8 +640,23 @@ function wordComplete(correct) {
   state.currentIndex++;
 
   if (state.mode === 'journey' && state.currentIndex >= state.words.length) {
-    endGame();
-    return;
+    if (state.isInfinite) {
+      // Replenish with more random airports
+      const allCodes = Object.keys(AIRPORTS);
+      const more = shuffle([...allCodes]).slice(0, 20);
+      for (const code of more) {
+        const airport = AIRPORTS[code];
+        if (airport) {
+          state.words.push({ type: 'code', text: code, airport });
+          state.words.push({ type: 'city', text: airport.city, airport });
+          state.words.push({ type: 'country', text: airport.country, airport });
+        }
+      }
+      if (state.journey) state.journey.stops.push(...more);
+    } else {
+      endGame();
+      return;
+    }
   }
 
   if (state.mode === 'practice' && state.currentIndex >= state.words.length) {
@@ -713,6 +805,108 @@ function endGame() {
 
   if (typeof WorldMap !== 'undefined') WorldMap.clear();
   showScreen('result');
+}
+
+// ── SWIPE TO BOARD ──
+let _boardingJourneyId = null;
+
+function setupSwipe() {
+  const track = $('bp-swipe-track');
+  const handle = $('bp-swipe-handle');
+  if (!track || !handle) return;
+
+  let startX = 0;
+  let dragging = false;
+  const threshold = 0.7; // 70% of track width
+
+  function onStart(e) {
+    dragging = true;
+    startX = (e.touches ? e.touches[0] : e).clientX;
+    handle.style.transition = 'none';
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    const x = (e.touches ? e.touches[0] : e).clientX;
+    const dx = x - startX;
+    const pct = Math.min(1, Math.max(0, dx / (track.offsetWidth - 80)));
+    handle.style.width = (80 + pct * (track.offsetWidth - 80)) + 'px';
+  }
+
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    handle.style.transition = 'width 0.3s ease';
+    const pct = handle.offsetWidth / track.offsetWidth;
+    if (pct >= threshold) {
+      handle.classList.add('swiped');
+      handle.textContent = '✈ Boarding!';
+      handle.style.width = '100%';
+      setTimeout(() => {
+        handle.classList.remove('swiped');
+        handle.textContent = '▸ Swipe';
+        handle.style.width = '80px';
+        if (_boardingJourneyId) startJourney(_boardingJourneyId);
+      }, 600);
+    } else {
+      handle.style.width = '80px';
+    }
+  }
+
+  track.addEventListener('mousedown', onStart);
+  track.addEventListener('touchstart', onStart, { passive: true });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: true });
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchend', onEnd);
+}
+
+// ── CUSTOM ROUTE ──
+function setupCustomRoute() {
+  const startBtn = $('custom-start-btn');
+  const backBtn = $('custom-back-btn');
+  if (!startBtn || !backBtn) return;
+
+  startBtn.addEventListener('click', () => {
+    const raw = $('custom-raw-route').value.toUpperCase();
+    const codes = raw.split(/[\s,]+/).filter(c => AIRPORTS[c]);
+    if (codes.length < 2) { alert('Need at least 2 valid airport codes'); return; }
+    if (codes.length > 12) codes.length = 12;
+
+    const customJourney = {
+      id: 'custom-' + Date.now(),
+      name: `${AIRPORTS[codes[0]].city} to ${AIRPORTS[codes[codes.length-1]].city}`,
+      icon: '🛠️',
+      description: 'Custom route',
+      difficulty: codes.length > 6 ? 'Hard' : 'Medium',
+      stops: codes
+    };
+    JOURNEYS.push(customJourney);
+    $('custom-raw-route').value = '';
+    showBoarding(customJourney.id);
+  });
+
+  backBtn.addEventListener('click', goToMenu);
+}
+
+// ── INFINITE MODE ──
+function startInfinite() {
+  const allCodes = Object.keys(AIRPORTS);
+  const shuffled = shuffle([...allCodes]);
+  const stops = shuffled.slice(0, 50); // start with 50, replenish later
+
+  const infJourney = {
+    id: 'infinite-' + Date.now(),
+    name: 'Infinite Flight',
+    icon: '∞',
+    description: 'Non-stop world tour',
+    difficulty: 'Endurance',
+    stops: stops
+  };
+  JOURNEYS.push(infJourney);
+
+  state.isInfinite = true;
+  showBoarding(infJourney.id);
 }
 
 // ── UTILS ──

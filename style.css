@@ -28,6 +28,8 @@ html, body {
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 #app {
@@ -47,7 +49,9 @@ html, body {
   animation: fadeIn 0.3s ease;
 }
 
-.screen.active { display: flex; flex-direction: column; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+#menu-screen.active { overflow-y: auto; max-height: 100vh; max-height: 100dvh; padding-bottom: 2rem; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -936,17 +940,135 @@ html, body {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
-  .screen { padding: 1rem; }
-  .logo h1 { font-size: 1.8rem; }
-  .word-display { font-size: 1.8rem; }
-  .typing-input { font-size: 1rem; padding: 0.8rem 1rem; }
-  .game-bar { gap: 1.5rem; }
-  .result-stat.big .result-value { font-size: 2.2rem; }
-  .result-stats { gap: 2rem; }
-  .result-stats.secondary { gap: 1rem; }
-  .category-grid { grid-template-columns: 1fr; }
-  .progress-line { width: 15px; }
-  .stop-code { font-size: 0.55rem; }
+  html, body { overflow-y: auto; }
+  #app { align-items: flex-start; min-height: 100vh; min-height: 100dvh; }
+  .screen { padding: 1rem 0.75rem; }
+  #menu-screen.active { padding-top: 0.5rem; }
+  .logo h1 { font-size: 1.6rem; }
+  .logo-icon { font-size: 1.8rem; }
+  .tagline { font-size: 0.85rem; }
+  .hero { margin-bottom: 1rem; }
+  .mode-tabs { margin-bottom: 1rem; }
+  .mode-tab { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
+  .category-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; max-height: none; overflow-y: visible; }
+  .category-card { padding: 0.75rem; }
+  .category-card .card-icon { font-size: 1.3rem; margin-bottom: 0.3rem; }
+  .category-card .card-title { font-size: 0.85rem; }
+  .category-card .card-desc { font-size: 0.7rem; margin-bottom: 0.3rem; }
+  .category-card .card-meta { gap: 0.4rem; }
+  .category-card .card-count { font-size: 0.65rem; }
+  .difficulty { font-size: 0.6rem; padding: 0.1rem 0.35rem; }
+
+  #game-screen { padding: 0.5rem 0.75rem; }
+  .game-header { padding-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+  .btn-back { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+  .game-info { font-size: 0.75rem; gap: 0.4rem; }
+  .game-stats-mini span:first-child { font-size: 1.1rem; }
+
+  .journey-progress { padding: 0.5rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .progress-line { width: 12px; }
+  .stop-dot { width: 8px; height: 8px; }
+  .stop-code { font-size: 0.5rem; }
+
+  .airport-card { padding: 0.5rem 0.75rem; gap: 0.5rem; margin-bottom: 0.3rem; }
+  .airport-flag { font-size: 1.5rem; }
+  .airport-code-display { font-size: 0.9rem; }
+  .airport-name, .airport-city { font-size: 0.7rem; }
+
+  .word-display { font-size: 1.5rem; min-height: 2.5rem; margin-bottom: 0.75rem; }
+  .word-type-label { font-size: 0.6rem; margin-bottom: 0.3rem; }
+  .typing-input { font-size: 1rem; padding: 0.7rem 0.75rem; max-width: 100%; }
+  .airport-fact { font-size: 0.7rem; padding: 0.4rem 0.75rem; }
+
+  .game-area { gap: 0.75rem; }
+  .runway { max-width: 100%; }
+  .queue-display { gap: 0.4rem; }
+  .queue-item { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+
+  .game-bar { gap: 1rem; padding-top: 0.5rem; }
+  .bar-label { font-size: 0.6rem; }
+  .bar-value { font-size: 0.85rem; }
+
+  .boarding-pass { max-width: 100%; margin: 0; }
+  .bp-header { padding: 0.75rem 1rem; }
+  .bp-airline { font-size: 0.65rem; }
+  .bp-class { font-size: 0.55rem; }
+  .bp-body { padding: 1rem; }
   .bp-code { font-size: 1.8rem; }
-  .boarding-pass { margin: 0 1rem; }
+  .bp-city { font-size: 0.7rem; }
+  .bp-route-display { gap: 0.75rem; margin-bottom: 1rem; }
+  .bp-details { gap: 0.5rem; grid-template-columns: repeat(3, 1fr); }
+  .bp-label { font-size: 0.55rem; }
+  .bp-value { font-size: 0.75rem; }
+  .bp-footer { padding: 0.75rem 1rem; }
+  .bp-barcode { font-size: 0.55rem; }
+
+  .result-card { padding: 1.25rem; }
+  .result-title { font-size: 1.1rem; }
+  .result-stat.big .result-value { font-size: 2rem; }
+  .result-stats { gap: 1.5rem; }
+  .result-stats.secondary { gap: 0.75rem; }
+  .result-stat .result-value { font-size: 1rem; }
+  .result-actions { flex-direction: column; gap: 0.5rem; }
+  .btn { padding: 0.6rem 1rem; font-size: 0.85rem; }
+
+  .combo-flash { font-size: 2.5rem; }
+  .time-badge { font-size: 0.65rem; margin-top: 0.3rem; }
 }
+
+@media (max-width: 380px) {
+  .category-grid { grid-template-columns: 1fr; }
+  .bp-details { grid-template-columns: repeat(2, 1fr); }
+  .word-display { font-size: 1.2rem; }
+}
+
+/* ── LANDING ANIMATION ── */
+#airport-intro {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+#airport-intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.intro-runway { width: 4px; height: 120px; background: linear-gradient(to bottom, transparent, var(--accent)); margin-bottom: 1rem; animation: runwayGrow 1.2s ease forwards; }
+@keyframes runwayGrow { from { height: 0; opacity: 0; } to { height: 120px; opacity: 1; } }
+.intro-plane-wrap { animation: planeLand 1.2s ease-out 0.3s both; }
+@keyframes planeLand { from { transform: translateY(-60px) scale(0.3); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.intro-plane { font-size: 3rem; display: block; }
+.intro-text { font-size: 1rem; color: var(--text-dim); margin-top: 0.75rem; letter-spacing: 0.15em; font-weight: 600; animation: fadeIn 0.6s ease 1s both; }
+
+/* ── SWIPE TO BOARD ── */
+.bp-swipe-wrap { padding: 1rem 1.5rem; text-align: center; background: #f0f1f3; border-top: 2px dashed #ddd; }
+.bp-swipe-label { font-size: 0.7rem; color: #999; margin-bottom: 0.5rem; }
+.bp-swipe-track { position: relative; width: 100%; height: 44px; background: #e2e8f0; border-radius: 22px; overflow: hidden; touch-action: none; }
+.bp-swipe-handle { position: absolute; left: 0; top: 0; height: 100%; width: 80px; background: linear-gradient(135deg, var(--accent), #60a5fa); color: white; display: flex; align-items: center; justify-content: center; border-radius: 22px; font-size: 0.8rem; font-weight: 700; cursor: grab; user-select: none; transition: width 0.2s; }
+.bp-swipe-handle.swiped { width: 100% !important; border-radius: 22px; justify-content: center; }
+.bp-swipe-shimmer { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; animation: shimmer 2s ease infinite; }
+@keyframes shimmer { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+/* ── DICE ANIMATION ── */
+.bp-dice-wrap { text-align: center; margin-bottom: 1rem; }
+.bp-dice-label { font-size: 0.65rem; color: #999; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.bp-dice { font-size: 2.5rem; display: inline-block; }
+.bp-dice.rolling { animation: diceRoll 0.6s ease; }
+@keyframes diceRoll { 0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(90deg) scale(0.8); } 50% { transform: rotate(180deg) scale(1.1); } 75% { transform: rotate(270deg) scale(0.9); } 100% { transform: rotate(360deg) scale(1); } }
+
+/* ── CUSTOM ROUTE ── */
+.custom-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 100%; }
+.custom-card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.custom-card p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+.custom-input-wrap { margin-bottom: 1.5rem; }
+.custom-input-wrap label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+.custom-input-wrap input { width: 100%; background: var(--bg-input); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 1rem; outline: none; }
+.custom-input-wrap input:focus { border-color: var(--accent); }
+.custom-input-wrap small { display: block; margin-top: 0.4rem; font-size: 0.7rem; color: var(--text-muted); }
+.custom-actions { display: flex; gap: 0.75rem; }
+.custom-card-menu { border: 1px dashed var(--success) !important; background: rgba(34,197,94,0.03); }
+.custom-card-menu:hover { background: rgba(34,197,94,0.08) !important; border-color: var(--success) !important; }
+
+/* ── INFINITE MODE ── */
+.infinite-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--accent); animation: infinitePulse 2s ease infinite; }
+@keyframes infinitePulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+.infinite-symbol { font-size: 1.2rem; }
+
