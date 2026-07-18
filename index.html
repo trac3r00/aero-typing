@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AERO TYPING | Aviation Typing Game</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="airport-intro">
+    <div class="intro-runway"></div>
+    <div class="intro-plane-wrap">
+      <span class="intro-plane">✈</span>
+    </div>
+    <div class="intro-text">Welcome to AERO TYPING</div>
+  </div>
+
+  <div id="app">
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="screen active">
+      <div class="hero">
+        <div class="logo">
+          <span class="logo-icon">✈</span>
+          <h1>AERO TYPING</h1>
+        </div>
+        <p class="tagline">Type your way through the skies</p>
+        <div class="time-badge" id="time-badge"></div>
+      </div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="journey">Journey Mode</button>
+        <button class="mode-tab" data-mode="practice">Practice Mode</button>
+      </div>
+      <div id="journey-grid" class="category-grid"></div>
+      <div id="practice-grid" class="category-grid" style="display:none"></div>
+    </div>
+
+    <!-- BOARDING SCREEN -->
+    <div id="boarding-screen" class="screen">
+      <div class="boarding-pass">
+        <div class="bp-header">
+          <span class="bp-airline">AERO TYPING AIRLINES</span>
+          <span class="bp-class">BOARDING PASS</span>
+        </div>
+
+        <div class="bp-body">
+          <div class="bp-dice-wrap" id="bp-dice-wrap" style="display:none">
+            <div class="bp-dice-label">Route chosen by randomizer</div>
+            <div class="bp-dice" id="bp-dice">1</div>
+          </div>
+
+          <div class="bp-route-display">
+            <div class="bp-airport">
+              <div class="bp-code" id="bp-from-code">JFK</div>
+              <div class="bp-city" id="bp-from-city">New York</div>
+            </div>
+            <div class="bp-plane-path">
+              <div class="bp-path-line"></div>
+              <div class="bp-plane-icon">✈</div>
+              <div class="bp-path-line"></div>
+            </div>
+            <div class="bp-airport">
+              <div class="bp-code" id="bp-to-code">ICN</div>
+              <div class="bp-city" id="bp-to-city">Seoul</div>
+            </div>
+          </div>
+
+          <div class="bp-details">
+            <div class="bp-detail">
+              <span class="bp-label">ROUTE</span>
+              <span class="bp-value" id="bp-route">New York to Seoul</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">STOPS</span>
+              <span class="bp-value" id="bp-stops">5 airports</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">FLIGHT</span>
+              <span class="bp-value" id="bp-flight">AT1234</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">GATE</span>
+              <span class="bp-value" id="bp-gate">B12</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">SEAT</span>
+              <span class="bp-value" id="bp-seat">14A</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">TIME</span>
+              <span class="bp-value" id="bp-time">12:00</span>
+            </div>
+            <div class="bp-detail">
+              <span class="bp-label">DATE</span>
+              <span class="bp-value" id="bp-date">Jul 17, 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bp-footer">
+          <div class="bp-status" id="bp-status">TAP TO BOARD</div>
+          <div class="bp-barcode">||||| || ||| |||| || ||||| ||| || ||||</div>
+        </div>
+
+        <div class="bp-swipe-wrap">
+          <div class="bp-swipe-label">Swipe to tear the ticket and board</div>
+          <div id="bp-swipe-track" class="bp-swipe-track">
+            <div id="bp-swipe-handle" class="bp-swipe-handle">▸ Swipe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM ROUTE SCREEN -->
+    <div id="custom-screen" class="screen">
+      <div class="custom-card">
+        <h2>Build your custom route</h2>
+        <p>Type airport codes in order and we'll make the route for you.</p>
+        <div class="custom-input-wrap">
+          <label for="custom-raw-route">Route</label>
+          <input id="custom-raw-route" type="text" placeholder="JFK,LHR,DXB,ICN" list="airport-code-list" autocomplete="off" />
+          <small>Use comma or spaces. You can type 2 to 12 airports.</small>
+        </div>
+        <div class="custom-actions">
+          <button id="custom-start-btn" class="btn btn-primary">Create route</button>
+          <button id="custom-back-btn" class="btn btn-secondary">Cancel</button>
+        </div>
+        <datalist id="airport-code-list"></datalist>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+      <div class="game-header">
+        <button class="btn-back" id="btn-back">← Back</button>
+        <div class="game-info">
+          <span id="game-category-name"></span>
+          <span class="separator">|</span>
+          <span id="timer">0:00</span>
+        </div>
+        <div class="game-stats-mini">
+          <span id="stat-score">0</span>
+          <span class="stat-label">score</span>
+        </div>
+      </div>
+
+      <div class="journey-progress" id="journey-progress" style="display:none">
+        <div class="progress-stops" id="progress-stops"></div>
+      </div>
+
+      <div class="airport-card" id="airport-card" style="display:none">
+        <div class="airport-flag" id="airport-flag"></div>
+        <div class="airport-info">
+          <div class="airport-code-display" id="airport-code-display"></div>
+          <div class="airport-name" id="airport-name-display"></div>
+          <div class="airport-city" id="airport-city-display"></div>
+        </div>
+      </div>
+
+      <div class="game-area">
+        <div class="runway">
+          <div id="word-display" class="word-display"></div>
+          <input type="text" id="typing-input" class="typing-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Start typing..." />
+          <div class="airport-fact" id="airport-fact" style="display:none"></div>
+        </div>
+        <div class="queue-display" id="queue-display"></div>
+      </div>
+
+      <div class="game-bar">
+        <div class="bar-item"><span class="bar-label">WPM</span><span class="bar-value" id="live-wpm">0</span></div>
+        <div class="bar-item"><span class="bar-label">Accuracy</span><span class="bar-value" id="live-accuracy">100%</span></div>
+        <div class="bar-item"><span class="bar-label">Streak</span><span class="bar-value" id="live-streak">0</span></div>
+        <div class="bar-item"><span class="bar-label">Combo</span><span class="bar-value" id="live-combo">x1</span></div>
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="screen">
+      <div class="result-card">
+        <h2 class="result-title" id="result-title">Flight Complete ✈️</h2>
+        <div class="result-category" id="result-category"></div>
+
+        <div class="result-stats">
+          <div class="result-stat big"><span class="result-value" id="result-wpm">0</span><span class="result-label">WPM</span></div>
+          <div class="result-stat big"><span class="result-value" id="result-accuracy">0%</span><span class="result-label">Accuracy</span></div>
+        </div>
+
+        <div class="result-stats secondary">
+          <div class="result-stat"><span class="result-value" id="result-score">0</span><span class="result-label">Score</span></div>
+          <div class="result-stat"><span class="result-value" id="result-time">0:00</span><span class="result-label">Time</span></div>
+          <div class="result-stat"><span class="result-value" id="result-words">0</span><span class="result-label">Airports</span></div>
+          <div class="result-stat"><span class="result-value" id="result-best-streak">0</span><span class="result-label">Best Streak</span></div>
+        </div>
+
+        <div class="airports-learned" id="airports-learned" style="display:none">
+          <h3>Airports Discovered</h3>
+          <div class="learned-list" id="learned-list"></div>
+        </div>
+
+        <div class="result-rank" id="result-rank"></div>
+
+        <div class="result-actions">
+          <button class="btn btn-primary" id="btn-retry">Fly Again</button>
+          <button class="btn btn-secondary" id="btn-menu">Change Route</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+  <script src="background.js"></script>
+  <script src="sound.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
