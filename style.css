@@ -65,6 +65,8 @@ html, body {
   margin-bottom: 1.5rem;
   background: var(--bg-card);
   border-radius: var(--radius);
+  width: 100%;
+  max-width: 900px;
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -133,10 +135,10 @@ html, body {
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  max-height: 60vh;
-  overflow-y: auto;
+  width: 100%;
+  max-width: 900px;
 }
 
 .category-card {

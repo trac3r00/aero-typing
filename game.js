@@ -62,7 +62,7 @@ function init() {
   const badge = $('time-badge');
   if (badge && typeof TimeTheme !== 'undefined') {
     const t = TimeTheme.themes[TimeTheme.getPhase()];
-    badge.textContent = `${t.icon} ${t.label} Flight`;
+    badge.textContent = t.label;
   }
 
   // Populate datalist for custom route
